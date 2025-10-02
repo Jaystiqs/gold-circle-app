@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "851261172791",
+    "project_id": "gold-circle-83b88",
+    "storage_bucket": "gold-circle-83b88.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:851261172791:android:539e9a238520b11efb63b2",
+        "android_client_info": {
+          "package_name": "com.blacksun.goldcircle"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "851261172791-bclchav9av42m1k040ku7obge0a8osa7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA1EIEZVdE2V0FyIXB6LWeRvN_guPRD-iI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "851261172791-bclchav9av42m1k040ku7obge0a8osa7.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "851261172791-lc865ho1gij64u7bsok05od3q3o1k15s.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.blacksun.goldcircle"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
