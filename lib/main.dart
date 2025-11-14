@@ -3,14 +3,20 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:goldcircle/onboarding/intro_page.dart';
 import 'package:goldcircle/pages/client/client_account_settings.dart';
+import 'package:goldcircle/creators/app_mode_provider.dart';
+import 'package:goldcircle/splash_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:goldcircle/auth/auth_wrapper.dart';
 import 'package:goldcircle/auth/email_verification.dart';
 import 'package:goldcircle/auth/consolidated_auth.dart';
-import 'package:goldcircle/providers/user_provider.dart'; // Import your UserProvider
-import 'app_styles.dart';
-import 'bottom_navigation.dart';
+import 'package:goldcircle/creators/user_provider.dart'; // Import your UserProvider
+import 'onboarding/client_onboarding_flow.dart';
+import 'onboarding/creator_onboarding_flow.dart';
+import 'onboarding/welcome_screen.dart';
+import 'utils/app_styles.dart';
+import 'bottom_navigation_client.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -41,6 +47,10 @@ class GoldCircleApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (_) => UserProvider(),
         ),
+        // App Mode Provider - manages client/provider mode switching
+        ChangeNotifierProvider(
+          create: (_) => AppModeCreator(),
+        ),
         // Add other providers here as needed
         // ChangeNotifierProvider(create: (_) => OtherProvider()),
       ],
@@ -69,7 +79,7 @@ class GoldCircleApp extends StatelessWidget {
               systemNavigationBarDividerColor: Colors.transparent,
             ),
           ),
-          textTheme: const TextTheme(
+          textTheme: TextTheme(
             displayLarge: AppStyles.h1,
             displayMedium: AppStyles.h2,
             displaySmall: AppStyles.h3,
@@ -127,13 +137,17 @@ class GoldCircleApp extends StatelessWidget {
           ),
         ),
         // Define named routes
-        initialRoute: '/',
+        initialRoute: '/splash',
         routes: {
-          '/': (context) => const SystemUIWrapper(child: AuthWrapper()),
+          '/splash': (context) => const SplashScreen(),
+          '/': (context) => const SystemUIWrapper(child: IntroPage()), // Changed to WelcomeScreen
+          '/auth-wrapper': (context) => const SystemUIWrapper(child: AuthWrapper()),
           '/home': (context) => const SystemUIWrapper(child: AuthWrapper()),
           '/auth': (context) => const ConsolidatedAuthPage(),
           '/email-verification': (context) => const EmailVerificationPage(),
           '/account-settings': (context) => const AccountSettingsPage(),
+          '/client-onboarding': (context) => const ClientOnboardingFlow(),
+          '/provider-onboarding': (context) => const CreatorOnboardingFlow(),
         },
         debugShowCheckedModeBanner: false,
       ),

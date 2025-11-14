@@ -15,6 +15,9 @@ class SmoothRangeSlider extends StatefulWidget {
   final double thumbRadius;
   final double thumbBorderWidth;
   final double trackHeight;
+  final bool useNonLinearScale;
+  final double scalePower;
+
   const SmoothRangeSlider({
     Key? key,
     required this.min,
@@ -30,6 +33,8 @@ class SmoothRangeSlider extends StatefulWidget {
     this.thumbRadius = 12.0,
     this.thumbBorderWidth = 2.0,
     this.trackHeight = 4.0,
+    this.useNonLinearScale = false,
+    this.scalePower = 2.0,
   }) : super(key: key);
 
   @override
@@ -77,6 +82,29 @@ class _SmoothRangeSliderState extends State<SmoothRangeSlider>
     super.dispose();
   }
 
+  // Convert normalized position (0-1) to actual value with non-linear scaling
+  double _positionToValue(double normalizedPosition) {
+    if (!widget.useNonLinearScale) {
+      return widget.min + (normalizedPosition * (widget.max - widget.min));
+    }
+
+    // Apply power function for non-linear scaling
+    // Lower values get more space, higher values get compressed
+    final double scaledPosition = math.pow(normalizedPosition, widget.scalePower).toDouble();
+    return widget.min + (scaledPosition * (widget.max - widget.min));
+  }
+
+  // Convert actual value to normalized position (0-1) with non-linear scaling
+  double _valueToPosition(double value) {
+    if (!widget.useNonLinearScale) {
+      return (value - widget.min) / (widget.max - widget.min);
+    }
+
+    // Reverse of the power function
+    final double normalizedValue = (value - widget.min) / (widget.max - widget.min);
+    return math.pow(normalizedValue, 1.0 / widget.scalePower).toDouble();
+  }
+
   void _handlePanStart(DragStartDetails details, Size size) {
     final RenderBox box = context.findRenderObject() as RenderBox;
     final Offset localPosition = box.globalToLocal(details.globalPosition);
@@ -86,8 +114,8 @@ class _SmoothRangeSliderState extends State<SmoothRangeSlider>
 
     // Determine which thumb is closer
     final double trackWidth = size.width - (widget.thumbRadius * 2);
-    final double startPosition = _getThumbPosition(_valuesNotifier.value.start, trackWidth);
-    final double endPosition = _getThumbPosition(_valuesNotifier.value.end, trackWidth);
+    final double startPosition = _valueToPosition(_valuesNotifier.value.start) * trackWidth;
+    final double endPosition = _valueToPosition(_valuesNotifier.value.end) * trackWidth;
 
     final double tapPosition = localPosition.dx - widget.thumbRadius;
     final double distanceToStart = (tapPosition - startPosition).abs();
@@ -108,7 +136,7 @@ class _SmoothRangeSliderState extends State<SmoothRangeSlider>
     final double normalizedPosition = ((localPosition.dx - widget.thumbRadius) / trackWidth)
         .clamp(0.0, 1.0);
 
-    final double newValue = widget.min + (normalizedPosition * (widget.max - widget.min));
+    final double newValue = _positionToValue(normalizedPosition);
 
     RangeValues newValues;
     if (_activeThumb == 0) {
@@ -137,11 +165,6 @@ class _SmoothRangeSliderState extends State<SmoothRangeSlider>
     _animationController.reverse();
 
     widget.onChangeEnd?.call(_valuesNotifier.value);
-  }
-
-  double _getThumbPosition(double value, double trackWidth) {
-    final double normalizedValue = (value - widget.min) / (widget.max - widget.min);
-    return normalizedValue * trackWidth;
   }
 
   @override
@@ -178,6 +201,8 @@ class _SmoothRangeSliderState extends State<SmoothRangeSlider>
                         trackHeight: widget.trackHeight,
                         activeThumb: _activeThumb,
                         thumbScale: _isDragging ? _scaleAnimation.value : 1.0,
+                        useNonLinearScale: widget.useNonLinearScale,
+                        scalePower: widget.scalePower,
                       ),
                     );
                   },
@@ -204,6 +229,8 @@ class _RangeSliderPainter extends CustomPainter {
   final double trackHeight;
   final int? activeThumb;
   final double thumbScale;
+  final bool useNonLinearScale;
+  final double scalePower;
 
   _RangeSliderPainter({
     required this.values,
@@ -218,7 +245,18 @@ class _RangeSliderPainter extends CustomPainter {
     required this.trackHeight,
     this.activeThumb,
     required this.thumbScale,
+    required this.useNonLinearScale,
+    required this.scalePower,
   });
+
+  double _valueToPosition(double value) {
+    if (!useNonLinearScale) {
+      return (value - min) / (max - min);
+    }
+
+    final double normalizedValue = (value - min) / (max - min);
+    return math.pow(normalizedValue, 1.0 / scalePower).toDouble();
+  }
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -240,9 +278,9 @@ class _RangeSliderPainter extends CustomPainter {
     final double trackStartX = thumbRadius;
     final double trackEndX = size.width - thumbRadius;
 
-    // Calculate thumb positions
-    final double startPosition = trackStartX + _getThumbPosition(values.start, trackWidth);
-    final double endPosition = trackStartX + _getThumbPosition(values.end, trackWidth);
+    // Calculate thumb positions using non-linear scale
+    final double startPosition = trackStartX + (_valueToPosition(values.start) * trackWidth);
+    final double endPosition = trackStartX + (_valueToPosition(values.end) * trackWidth);
 
     // Draw inactive track (full length)
     trackPaint.color = inactiveColor;
@@ -297,11 +335,6 @@ class _RangeSliderPainter extends CustomPainter {
     canvas.drawCircle(center, scaledRadius, borderPaint);
   }
 
-  double _getThumbPosition(double value, double trackWidth) {
-    final double normalizedValue = (value - min) / (max - min);
-    return normalizedValue * trackWidth;
-  }
-
   @override
   bool shouldRepaint(covariant _RangeSliderPainter oldDelegate) {
     return oldDelegate.values != values ||
@@ -313,6 +346,6 @@ class _RangeSliderPainter extends CustomPainter {
 // Extension for easy formatting
 extension CurrencyFormat on double {
   String toCurrency() {
-    return 'GH₵${this.round()}';
+    return 'GHS${this.round()}';
   }
 }

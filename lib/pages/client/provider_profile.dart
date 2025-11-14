@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:goldcircle/pages/client/provider_offer.dart';
+import 'package:goldcircle/pages/client/client_creator_offer.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import '../../app_styles.dart';
+import '../../utils/app_styles.dart';
 
 class ProviderProfilePage extends StatefulWidget {
   final String providerId;
@@ -18,128 +18,153 @@ class ProviderProfilePage extends StatefulWidget {
 class _ProviderProfilePageState extends State<ProviderProfilePage> {
   bool _isLiked = false;
 
-  // Mock provider data
+  // Mock provider data - Social Media Marketer
   final _provider = ProviderData(
     id: '1',
-    name: 'Sarah Johnson',
-    title: 'Professional Photographer',
+    name: 'Kwame Asante',
+    title: 'Digital Marketing Strategist',
     location: 'Accra, Ghana',
-    imageUrl: 'https://avatar.iran.liara.run/public/girl',
-    rating: 4.9,
-    reviewCount: 127,
-    completedProjects: 156,
-    responseTime: '1 hour',
-    bio: 'Award-winning photographer specializing in portrait, event, and commercial photography. With over 8 years of experience, I bring creative vision and technical expertise to every project.',
+    imageUrl: 'https://avatar.iran.liara.run/public/boy',
+    rating: 4.8,
+    reviewCount: 89,
+    completedProjects: 142,
+    responseTime: '2 hours',
+    bio: 'Results-driven social media marketer with 6+ years of experience helping businesses grow their online presence. Specialized in creating viral content, managing ad campaigns, and building engaged communities that convert. I\'ve helped 100+ brands increase their ROI through strategic digital marketing.',
     skills: [
-      'Portrait Photography',
-      'Event Photography',
-      'Photo Editing',
-      'Commercial Photography',
-      'Product Photography',
+      'Social Media Strategy',
+      'Facebook & Instagram Ads',
+      'Content Creation',
+      'Google Ads',
+      'TikTok Marketing',
+      'Email Marketing',
+      'SEO Optimization',
+      'Analytics & Reporting',
+      'Brand Development',
+      'Influencer Marketing',
     ],
-    languages: ['English', 'French'],
+    languages: ['English', 'Twi', 'French'],
     education: [
       Education(
-        degree: 'Bachelor of Fine Arts',
-        institution: 'University of Ghana',
-        year: '2015',
+        degree: 'MBA in Digital Marketing',
+        institution: 'GIMPA Business School',
+        year: '2020',
       ),
       Education(
-        degree: 'Photography Certification',
-        institution: 'New York Film Academy',
-        year: '2017',
+        degree: 'Google Ads Certification',
+        institution: 'Google Skillshop',
+        year: '2023',
+      ),
+      Education(
+        degree: 'Facebook Blueprint Certified',
+        institution: 'Meta Business',
+        year: '2022',
       ),
     ],
-    startingPrice: 500,
+    startingPrice: 800,
     isVerified: true,
     tier: 'Gold',
     portfolio: [
       PortfolioItem(
         id: '1',
-        title: 'Wedding Portfolio',
-        imageUrl: 'https://placehold.co/400x500/f0f0f0/cccccc?text=Wedding',
-        category: 'Events',
+        title: 'Restaurant Chain Campaign',
+        imageUrl: 'https://placehold.co/400x500/f0f0f0/cccccc?text=Campaign',
+        category: 'Food & Beverage',
       ),
       PortfolioItem(
         id: '2',
-        title: 'Corporate Headshots',
-        imageUrl: 'https://placehold.co/400x500/e8e8e8/999999?text=Headshots',
-        category: 'Commercial',
+        title: 'Fashion Brand Launch',
+        imageUrl: 'https://placehold.co/400x500/e8e8e8/999999?text=Fashion',
+        category: 'E-commerce',
       ),
       PortfolioItem(
         id: '3',
-        title: 'Product Photography',
-        imageUrl: 'https://placehold.co/400x500/f5f5f5/aaaaaa?text=Products',
-        category: 'Commercial',
+        title: 'Tech Startup Growth',
+        imageUrl: 'https://placehold.co/400x500/f5f5f5/aaaaaa?text=Tech',
+        category: 'Technology',
       ),
       PortfolioItem(
         id: '4',
-        title: 'Fashion Editorial',
-        imageUrl: 'https://placehold.co/400x500/ececec/bbbbbb?text=Fashion',
-        category: 'Portrait',
+        title: 'Real Estate Social Media',
+        imageUrl: 'https://placehold.co/400x500/ececec/bbbbbb?text=RealEstate',
+        category: 'Real Estate',
+      ),
+      PortfolioItem(
+        id: '5',
+        title: 'Beauty Brand Instagram',
+        imageUrl: 'https://placehold.co/400x500/e0e0e0/888888?text=Beauty',
+        category: 'Beauty & Cosmetics',
       ),
     ],
     offers: [
       ServiceOffer(
         id: '1',
-        title: 'Wedding Photography Package',
-        description: 'Complete wedding coverage with 8 hours of shooting, edited photos, and online gallery',
-        price: 2500,
-        duration: '8 hours',
-        deliverables: '300+ edited photos',
+        title: 'Complete Social Media Management',
+        description: 'Full management of 3 social media platforms including content creation, posting schedule, engagement, and monthly analytics reports',
+        price: 3500,
+        duration: '30 days',
+        deliverables: '30 posts, 15 stories, weekly reports',
       ),
       ServiceOffer(
         id: '2',
-        title: 'Corporate Headshots',
-        description: 'Professional headshots for your team, includes basic retouching',
-        price: 150,
-        duration: '30 minutes',
-        deliverables: '5 edited photos',
+        title: 'Social Media Audit & Strategy',
+        description: 'Comprehensive analysis of your current social media presence with detailed strategy roadmap for growth',
+        price: 1200,
+        duration: '5 days',
+        deliverables: 'Audit report, strategy document, content calendar',
       ),
       ServiceOffer(
         id: '3',
-        title: 'Product Photography',
-        description: 'High-quality product photos for e-commerce or marketing materials',
-        price: 500,
-        duration: '2 hours',
-        deliverables: '20 edited photos',
+        title: 'Facebook & Instagram Ad Campaign',
+        description: 'Setup and manage targeted ad campaigns to increase sales and brand awareness (ad spend not included)',
+        price: 2000,
+        duration: '14 days',
+        deliverables: 'Ad creatives, campaign setup, optimization',
       ),
       ServiceOffer(
         id: '4',
-        title: 'Event Coverage',
-        description: 'Full event photography coverage for corporate or social events',
-        price: 1200,
-        duration: '4 hours',
-        deliverables: '200+ edited photos',
+        title: 'Content Creation Package',
+        description: 'Professional content creation for your brand including graphics, videos, and copywriting',
+        price: 1500,
+        duration: '7 days',
+        deliverables: '20 designed posts, 5 reels/videos, captions',
       ),
     ],
     reviews: [
       Review(
         id: '1',
-        clientName: 'Michael Chen',
-        clientImage: 'https://avatar.iran.liara.run/public/boy',
+        clientName: 'Abena Mensah',
+        clientImage: 'https://avatar.iran.liara.run/public/girl',
         rating: 5.0,
-        comment: 'Sarah exceeded all expectations! Her creativity and professionalism made our wedding photos absolutely stunning. Highly recommend!',
-        date: DateTime.now().subtract(const Duration(days: 15)),
-        projectType: 'Wedding Photography',
+        comment: 'Kwame transformed our social media presence completely! Our engagement increased by 300% and we\'ve seen a 45% boost in sales from social media. His strategies are data-driven and really work!',
+        date: DateTime(2025, 10, 5), // 10 days ago
+        projectType: 'Social Media Management',
       ),
       Review(
         id: '2',
-        clientName: 'Emily Davis',
-        clientImage: 'https://avatar.iran.liara.run/public/girl',
+        clientName: 'Joseph Osei',
+        clientImage: 'https://avatar.iran.liara.run/public/boy',
         rating: 5.0,
-        comment: 'Working with Sarah was an absolute pleasure. She captured the essence of our brand perfectly in the product photos.',
-        date: DateTime.now().subtract(const Duration(days: 32)),
-        projectType: 'Product Photography',
+        comment: 'The Facebook ad campaign Kwame created for our restaurant was incredible. We got 500+ new customers in just 2 weeks. His targeting was spot-on and the ROI exceeded our expectations.',
+        date: DateTime(2025, 9, 20), // 25 days ago
+        projectType: 'Facebook Ads Campaign',
       ),
       Review(
         id: '3',
-        clientName: 'James Wilson',
-        clientImage: 'https://avatar.iran.liara.run/public/boy',
+        clientName: 'Grace Adjei',
+        clientImage: 'https://avatar.iran.liara.run/public/girl',
         rating: 4.8,
-        comment: 'Great photographer with excellent attention to detail. The corporate headshots came out professional and polished.',
-        date: DateTime.now().subtract(const Duration(days: 45)),
-        projectType: 'Corporate Photography',
+        comment: 'Professional, creative, and results-oriented. Kwame helped us build a strong brand identity on social media. Our followers grew from 2K to 15K in 3 months!',
+        date: DateTime(2025, 8, 15), // 2 months ago
+        projectType: 'Brand Development',
+      ),
+      Review(
+        id: '4',
+        clientName: 'Emmanuel Darko',
+        clientImage: 'https://avatar.iran.liara.run/public/boy',
+        rating: 5.0,
+        comment: 'Best investment for our e-commerce business! The content strategy and influencer partnerships Kwame arranged drove massive traffic to our store.',
+        date: DateTime(2025, 7, 10), // 3 months ago
+        projectType: 'E-commerce Marketing',
       ),
     ],
   );
@@ -265,7 +290,7 @@ class _ProviderProfilePageState extends State<ProviderProfilePage> {
                   child: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: Colors.pink,
+                      color: AppStyles.goldPrimary,
                       shape: BoxShape.circle,
                       border: Border.all(color: Colors.white, width: 3),
                     ),
@@ -358,24 +383,6 @@ class _ProviderProfilePageState extends State<ProviderProfilePage> {
           ),
           const SizedBox(height: 16),
           const Divider(),
-          // const SizedBox(height: 16),
-          // Row(
-          //   children: [
-          //     Icon(
-          //       PhosphorIcons.shieldCheck(),
-          //       size: 20,
-          //       color: AppStyles.textPrimary,
-          //     ),
-          //     const SizedBox(width: 8),
-          //     Text(
-          //       'Verified',
-          //       style: AppStyles.bodyLarge.copyWith(
-          //         fontWeight: AppStyles.semiBold,
-          //         decoration: TextDecoration.underline,
-          //       ),
-          //     ),
-          //   ],
-          // ),
         ],
       ),
     );
@@ -476,31 +483,31 @@ class _ProviderProfilePageState extends State<ProviderProfilePage> {
               );
             }).toList(),
           ),
-          // const SizedBox(height: 32),
-          // Text(
-          //   'Education',
-          //   style: AppStyles.h5.copyWith(
-          //     fontWeight: AppStyles.bold,
-          //   ),
-          // ),
-          // const SizedBox(height: 12),
-          // Padding(
-          //   padding: const EdgeInsets.only(left: 0),
-          //   child: SizedBox(
-          //     height: 100,
-          //     child: PageView.builder(
-          //       controller: PageController(viewportFraction: 0.75),
-          //       itemCount: _provider.education.length,
-          //       padEnds: false,
-          //       itemBuilder: (context, index) {
-          //         return Padding(
-          //           padding: const EdgeInsets.only(right: 16),
-          //           child: _buildEducationItem(_provider.education[index]),
-          //         );
-          //       },
-          //     ),
-          //   ),
-          // ),
+          const SizedBox(height: 32),
+          Text(
+            'Education',
+            style: AppStyles.h5.copyWith(
+              fontWeight: AppStyles.bold,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.only(left: 0),
+            child: SizedBox(
+              height: 100,
+              child: PageView.builder(
+                controller: PageController(viewportFraction: 0.75),
+                itemCount: _provider.education.length,
+                padEnds: false,
+                itemBuilder: (context, index) {
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 16),
+                    child: _buildEducationItem(_provider.education[index]),
+                  );
+                },
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -662,7 +669,7 @@ class _ProviderProfilePageState extends State<ProviderProfilePage> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => ProviderOfferPage(
+            builder: (context) => CreatorOfferPage(
               offerId: offer.id,
               providerId: widget.providerId,
             ),
@@ -707,7 +714,7 @@ class _ProviderProfilePageState extends State<ProviderProfilePage> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
-                    'GH₵${offer.price}',
+                    'GHS${offer.price}',
                     style: AppStyles.bodyMedium.copyWith(
                       color: AppStyles.textPrimary,
                       fontWeight: AppStyles.bold,
@@ -975,7 +982,7 @@ class _ProviderProfilePageState extends State<ProviderProfilePage> {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'GH₵${_provider.startingPrice}',
+                  'GHS${_provider.startingPrice}',
                   style: AppStyles.h5.copyWith(
                     fontWeight: AppStyles.bold,
                   ),
@@ -993,12 +1000,12 @@ class _ProviderProfilePageState extends State<ProviderProfilePage> {
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppStyles.backgroundWhite,
-                        foregroundColor: AppStyles.textPrimary,  // Changed to match the border
+                        foregroundColor: AppStyles.textPrimary,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        side: BorderSide(color: AppStyles.textLight),  // Border goes here
+                        side: BorderSide(color: AppStyles.textLight),
                         elevation: 0,
                       ),
                       child: Text(
@@ -1045,11 +1052,24 @@ class _ProviderProfilePageState extends State<ProviderProfilePage> {
     final now = DateTime.now();
     final difference = now.difference(date);
 
-    if (difference.inDays < 30) {
+    if (difference.inDays == 0) {
+      return 'Today';
+    } else if (difference.inDays == 1) {
+      return '1 day ago';
+    } else if (difference.inDays < 30) {
       return '${difference.inDays} days ago';
+    } else if (difference.inDays < 60) {
+      return '1 month ago';
+    } else if (difference.inDays < 90) {
+      return '2 months ago';
+    } else if (difference.inDays < 120) {
+      return '3 months ago';
+    } else if (difference.inDays < 150) {
+      return '4 months ago';
+    } else if (difference.inDays < 180) {
+      return '5 months ago';
     } else if (difference.inDays < 365) {
-      final months = (difference.inDays / 30).floor();
-      return '$months ${months == 1 ? 'month' : 'months'} ago';
+      return '6 months ago';
     } else {
       final years = (difference.inDays / 365).floor();
       return '$years ${years == 1 ? 'year' : 'years'} ago';

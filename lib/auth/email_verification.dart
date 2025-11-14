@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import '../app_styles.dart';
+import '../utils/app_styles.dart';
 
 class EmailVerificationPage extends StatefulWidget {
   final String? email;

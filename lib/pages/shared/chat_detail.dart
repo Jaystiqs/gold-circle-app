@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../../app_styles.dart';
+import '../../utils/app_styles.dart';
 
 // Message model
 class ChatMessage {

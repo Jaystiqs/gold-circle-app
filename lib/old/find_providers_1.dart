@@ -1,5 +1,5 @@
 // import 'package:flutter/material.dart';
-// import 'package:goldcircle/pages/client/providers_list.dart';
+// import 'package:goldcircle/pages/client/client_creators_list.dart';
 // import 'package:phosphor_flutter/phosphor_flutter.dart';
 // import 'package:cloud_firestore/cloud_firestore.dart';
 // import 'package:firebase_auth/firebase_auth.dart';
@@ -425,12 +425,12 @@
 //
 //   // Budget ranges
 //   final List<Map<String, dynamic>> commonBudgetRanges = [
-//     {'label': 'Under GH₵500', 'min': 100.0, 'max': 500.0},
-//     {'label': 'GH₵500-1K', 'min': 500.0, 'max': 1000.0},
-//     {'label': 'GH₵1K-3K', 'min': 1000.0, 'max': 3000.0},
-//     {'label': 'GH₵3K-5K', 'min': 3000.0, 'max': 5000.0},
-//     {'label': 'GH₵5K-10K', 'min': 5000.0, 'max': 10000.0},
-//     {'label': 'GH₵10K+', 'min': 10000.0, 'max': 20000.0},
+//     {'label': 'Under GHS500', 'min': 100.0, 'max': 500.0},
+//     {'label': 'GHS500-1K', 'min': 500.0, 'max': 1000.0},
+//     {'label': 'GHS1K-3K', 'min': 1000.0, 'max': 3000.0},
+//     {'label': 'GHS3K-5K', 'min': 3000.0, 'max': 5000.0},
+//     {'label': 'GHS5K-10K', 'min': 5000.0, 'max': 10000.0},
+//     {'label': 'GHS10K+', 'min': 10000.0, 'max': 20000.0},
 //     {'label': 'Any Price', 'min': 100.0, 'max': 20000.0},
 //   ];
 //

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:goldcircle/bottom_navigation_client.dart';
 import 'package:provider/provider.dart';
-import 'package:goldcircle/providers/user_provider.dart';
-import '../app_styles.dart';
+import 'package:goldcircle/creators/user_provider.dart';
+import 'package:goldcircle/creators/app_mode_provider.dart';
+import '../bottom_navigation_creator.dart';
+import '../utils/app_styles.dart';
 import 'consolidated_auth.dart';
-import '../bottom_navigation.dart';
 import 'email_verification.dart';
 
 class AuthWrapper extends StatefulWidget {
@@ -15,7 +17,6 @@ class AuthWrapper extends StatefulWidget {
 
 class _AuthWrapperState extends State<AuthWrapper> {
   bool _authDismissed = false;
-  bool _hasShownVerification = false;
   bool _hasShownAuth = false;
 
   void _navigateToAuth() {
@@ -35,26 +36,6 @@ class _AuthWrapperState extends State<AuthWrapper> {
       setState(() {
         _authDismissed = true;
         _hasShownAuth = false;
-      });
-    });
-  }
-
-  void _showVerificationPage() {
-    if (_hasShownVerification) return; // Prevent multiple verification screens
-
-    setState(() {
-      _hasShownVerification = true;
-    });
-
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => const EmailVerificationPage(),
-        fullscreenDialog: true,
-      ),
-    ).then((_) {
-      // Verification page was dismissed
-      setState(() {
-        _hasShownVerification = false;
       });
     });
   }
@@ -85,19 +66,17 @@ class _AuthWrapperState extends State<AuthWrapper> {
         break;
 
       case UserState.unverified:
-      // User exists but not verified - show verification if not already showing
-        if (!_hasShownVerification) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            _showVerificationPage();
-          });
-        }
+      // SKIP EMAIL VERIFICATION - treat as authenticated
+      // User exists but not verified - just let them into the app
+        setState(() {
+          _hasShownAuth = false;
+        });
         break;
 
       case UserState.authenticated:
       // User is fully authenticated - reset navigation flags
         setState(() {
           _hasShownAuth = false;
-          _hasShownVerification = false;
         });
         break;
 
@@ -110,8 +89,8 @@ class _AuthWrapperState extends State<AuthWrapper> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<UserProvider>(
-      builder: (context, userProvider, child) {
+    return Consumer2<UserProvider, AppModeCreator>(
+      builder: (context, userProvider, appModeProvider, child) {
         // Handle auth state changes
         WidgetsBinding.instance.addPostFrameCallback((_) {
           _handleUserStateChange(userProvider);
@@ -183,12 +162,18 @@ class _AuthWrapperState extends State<AuthWrapper> {
           );
         }
 
-        // Always show BottomNavigation as base
-        // The user state determines what content is shown
-        return BottomNavigation(
-          onShowAuth: _navigateToAuth,
-          isLoggedIn: userProvider.isLoggedIn,
-        );
+        // Choose navigation based on app mode
+        if (appModeProvider.isCreatorMode) {
+          return CreatorBottomNavigation(
+            onShowAuth: _navigateToAuth,
+            isLoggedIn: userProvider.isLoggedIn,
+          );
+        } else {
+          return BottomNavigation(
+            onShowAuth: _navigateToAuth,
+            isLoggedIn: userProvider.isLoggedIn,
+          );
+        }
       },
     );
   }

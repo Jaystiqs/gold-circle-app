@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'dart:async';
-import '../../app_styles.dart';
+import '../../utils/app_styles.dart';
 import 'provider_profile.dart';
 
 // Main view that handles multiple providers
 class PortfolioStoriesView extends StatefulWidget {
-  final List<ProviderWithStories> providers;
+  final List<CreatorWithStories> providers;
   final int initialProviderIndex;
 
   const PortfolioStoriesView({
@@ -59,7 +59,7 @@ class _PortfolioStoriesViewState extends State<PortfolioStoriesView> {
           return Padding(
             padding: const EdgeInsets.symmetric(vertical: 16.0),
             child: Center(
-              child: ProviderStoriesCard(
+              child: CreatorStoriesCard(
                 provider: provider,
                 isActive: isActive,
                 onClose: () => Navigator.of(context).pop(),
@@ -73,12 +73,12 @@ class _PortfolioStoriesViewState extends State<PortfolioStoriesView> {
 }
 
 // Individual provider's stories card with auto-advancing stories
-class ProviderStoriesCard extends StatefulWidget {
-  final ProviderWithStories provider;
+class CreatorStoriesCard extends StatefulWidget {
+  final CreatorWithStories provider;
   final bool isActive;
   final VoidCallback onClose;
 
-  const ProviderStoriesCard({
+  const CreatorStoriesCard({
     super.key,
     required this.provider,
     required this.isActive,
@@ -86,10 +86,10 @@ class ProviderStoriesCard extends StatefulWidget {
   });
 
   @override
-  State<ProviderStoriesCard> createState() => _ProviderStoriesCardState();
+  State<CreatorStoriesCard> createState() => _CreatorStoriesCardState();
 }
 
-class _ProviderStoriesCardState extends State<ProviderStoriesCard>
+class _CreatorStoriesCardState extends State<CreatorStoriesCard>
     with SingleTickerProviderStateMixin {
   int currentStoryIndex = 0;
   late AnimationController _progressController;
@@ -109,7 +109,7 @@ class _ProviderStoriesCardState extends State<ProviderStoriesCard>
   }
 
   @override
-  void didUpdateWidget(ProviderStoriesCard oldWidget) {
+  void didUpdateWidget(CreatorStoriesCard oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.isActive && !oldWidget.isActive) {
       _startStory();
@@ -543,13 +543,13 @@ class _ProviderStoriesCardState extends State<ProviderStoriesCard>
 }
 
 // Data models
-class ProviderWithStories {
+class CreatorWithStories {
   final String id;
   final String name;
   final String imageUrl;
   final List<PortfolioStory> stories;
 
-  ProviderWithStories({
+  CreatorWithStories({
     required this.id,
     required this.name,
     required this.imageUrl,
@@ -577,9 +577,9 @@ enum StoryType { image, video }
 
 // Sample data generator
 class PortfolioStoriesData {
-  static List<ProviderWithStories> getAllProviders() {
+  static List<CreatorWithStories> getAllCreators() {
     return [
-      ProviderWithStories(
+      CreatorWithStories(
         id: 'sarah_johnson_001',
         name: 'Sarah Johnson',
         imageUrl: 'https://avatar.iran.liara.run/public/girl',
@@ -610,7 +610,7 @@ class PortfolioStoriesData {
           ),
         ],
       ),
-      ProviderWithStories(
+      CreatorWithStories(
         id: 'michael_chen_002',
         name: 'Michael Chen',
         imageUrl: 'https://avatar.iran.liara.run/public/boy',
@@ -633,7 +633,7 @@ class PortfolioStoriesData {
           ),
         ],
       ),
-      ProviderWithStories(
+      CreatorWithStories(
         id: 'emily_davis_003',
         name: 'Emily Davis',
         imageUrl: 'https://avatar.iran.liara.run/public/girl',
@@ -664,7 +664,7 @@ class PortfolioStoriesData {
           ),
         ],
       ),
-      ProviderWithStories(
+      CreatorWithStories(
         id: 'james_wilson_004',
         name: 'James Wilson',
         imageUrl: 'https://avatar.iran.liara.run/public/boy',
@@ -683,27 +683,27 @@ class PortfolioStoriesData {
   }
 
   static List<PortfolioStory> getSampleStories(String providerName) {
-    final provider = getAllProviders().firstWhere(
+    final provider = getAllCreators().firstWhere(
           (p) => p.name == providerName,
-      orElse: () => getAllProviders()[0],
+      orElse: () => getAllCreators()[0],
     );
     return provider.stories;
   }
 
   // Helper method to get a single provider with stories by name
-  static ProviderWithStories getProviderByName(String providerName) {
-    return getAllProviders().firstWhere(
+  static CreatorWithStories getProviderByName(String providerName) {
+    return getAllCreators().firstWhere(
           (p) => p.name == providerName,
-      orElse: () => getAllProviders()[0],
+      orElse: () => getAllCreators()[0],
     );
   }
 
   // Helper method to create a single-provider list for stories view
-  static List<ProviderWithStories> getSingleProvider(String providerName, String imageUrl) {
+  static List<CreatorWithStories> getSingleProvider(String providerName, String imageUrl) {
     // Find existing provider by name, or create a new one
-    final existingProvider = getAllProviders().firstWhere(
+    final existingProvider = getAllCreators().firstWhere(
           (p) => p.name == providerName,
-      orElse: () => ProviderWithStories(
+      orElse: () => CreatorWithStories(
         id: providerName.toLowerCase().replaceAll(' ', '_'),
         name: providerName,
         imageUrl: imageUrl,

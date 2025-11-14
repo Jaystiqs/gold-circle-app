@@ -39,6 +39,9 @@ class _CircularTimelineSelectorState extends State<CircularTimelineSelector>
   late Animation<double> _scaleAnimation;
   bool _isDragging = false;
 
+  // 90% of a full circle (leaves a visible 36 degree gap)
+  static const double maxSweepAngle = 0.90 * 2 * math.pi;
+
   // Category-specific configurations
   Map<String, Map<String, dynamic>> get categoryConfig => {
     'Days': {
@@ -96,7 +99,10 @@ class _CircularTimelineSelectorState extends State<CircularTimelineSelector>
       setState(() {
         _currentValue = math.min(widget.initialValue, maxValue).clamp(minValue, maxValue);
       });
-      widget.onChanged(_currentValue);
+      // Defer callback to after build phase completes
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        widget.onChanged(_currentValue);
+      });
     }
   }
 
@@ -122,9 +128,8 @@ class _CircularTimelineSelectorState extends State<CircularTimelineSelector>
     angle = angle + math.pi / 2;
     if (angle > 2 * math.pi) angle -= 2 * math.pi;
 
-    // Map to 0-1 range (using 270 degrees)
-    final maxAngle = 3 * math.pi / 2;
-    return math.min(angle / maxAngle, 1.0);
+    // Map to 0-1 range (using 99% circle)
+    return math.min(angle / maxSweepAngle, 1.0);
   }
 
   void _updateValue(Offset position, Size size) {
@@ -144,7 +149,7 @@ class _CircularTimelineSelectorState extends State<CircularTimelineSelector>
   }
 
   bool _isInThumbArea(Offset position, Size size) {
-    final angle = _normalizedValue * 3 * math.pi / 2 - math.pi / 2;
+    final angle = _normalizedValue * maxSweepAngle - math.pi / 2;
     final center = Offset(size.width / 2, size.height / 2);
     final radius = (size.width - 40) / 2;
     final thumbPosition = Offset(
@@ -195,7 +200,7 @@ class _CircularTimelineSelectorState extends State<CircularTimelineSelector>
   Widget build(BuildContext context) {
     return Container(
       width: widget.size,
-      height: widget.size, // Removed the extra +60 pixels
+      height: widget.size,
       child: SizedBox(
         width: widget.size,
         height: widget.size,
@@ -290,7 +295,7 @@ class _CircularTimelineSelectorState extends State<CircularTimelineSelector>
                         AnimatedDefaultTextStyle(
                           duration: const Duration(milliseconds: 150),
                           style: TextStyle(
-                            fontSize: _isDragging ? 35 : 32,
+                            fontSize: _isDragging ? 38 : 32,
                             fontWeight: FontWeight.bold,
                             color: Colors.black87,
                           ),
@@ -328,6 +333,9 @@ class CircularTimelinePainter extends CustomPainter {
   final bool isDragging;
   final double scaleValue;
 
+  // 90% of a full circle (leaves a visible 36 degree gap)
+  static const double maxSweepAngle = 0.90 * 2 * math.pi;
+
   CircularTimelinePainter({
     required this.value,
     required this.activeColor,
@@ -344,7 +352,7 @@ class CircularTimelinePainter extends CustomPainter {
     final strokeWidth = 6.0;
     final thumbRadius = 12.0;
 
-    // Draw track background
+    // Draw track background (99% circle)
     final trackPaint = Paint()
       ..color = inactiveColor
       ..style = PaintingStyle.stroke
@@ -354,7 +362,7 @@ class CircularTimelinePainter extends CustomPainter {
     canvas.drawArc(
       Rect.fromCircle(center: center, radius: radius),
       -math.pi / 2,
-      3 * math.pi / 2,
+      maxSweepAngle,
       false,
       trackPaint,
     );
@@ -366,7 +374,7 @@ class CircularTimelinePainter extends CustomPainter {
       ..strokeWidth = strokeWidth
       ..strokeCap = StrokeCap.round;
 
-    final sweepAngle = value * 3 * math.pi / 2;
+    final sweepAngle = value * maxSweepAngle;
     canvas.drawArc(
       Rect.fromCircle(center: center, radius: radius),
       -math.pi / 2,
@@ -376,7 +384,7 @@ class CircularTimelinePainter extends CustomPainter {
     );
 
     // Draw thumb
-    final thumbAngle = value * 3 * math.pi / 2 - math.pi / 2;
+    final thumbAngle = value * maxSweepAngle - math.pi / 2;
     final thumbPosition = Offset(
       center.dx + radius * math.cos(thumbAngle),
       center.dy + radius * math.sin(thumbAngle),
@@ -430,8 +438,10 @@ class CircularTimelinePainter extends CustomPainter {
       ..color = inactiveColor.withOpacity(0.6)
       ..style = PaintingStyle.fill;
 
-    for (int i = 0; i <= 8; i++) {
-      final angle = (i * math.pi / 6) - math.pi / 2;
+    // Distribute dots evenly around the 99% circle
+    final numDots = 12;
+    for (int i = 0; i < numDots; i++) {
+      final angle = (i * maxSweepAngle / (numDots - 1)) - math.pi / 2;
       final dotPosition = Offset(
         center.dx + (radius + 15) * math.cos(angle),
         center.dy + (radius + 15) * math.sin(angle),

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import '../../app_styles.dart';
+import 'package:provider/provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../../utils/app_styles.dart';
+import '../../creators/user_provider.dart';
 
 class AccountSettingsPage extends StatefulWidget {
   const AccountSettingsPage({super.key});
@@ -10,42 +13,211 @@ class AccountSettingsPage extends StatefulWidget {
 }
 
 class _AccountSettingsPageState extends State<AccountSettingsPage> {
-  bool _showEmailBanner = true;
+  bool _showEmailBanner = false;
+  bool _isLoading = false;
+  bool _isCheckingVerification = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkEmailVerificationStatus();
+  }
+
+  Future<void> _checkEmailVerificationStatus() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      if (mounted) {
+        setState(() {
+          _isCheckingVerification = false;
+        });
+      }
+      return;
+    }
+
+    try {
+      // Reload user data to get fresh verification status
+      await user.reload();
+
+      // Get the updated user
+      final updatedUser = FirebaseAuth.instance.currentUser;
+
+      if (mounted) {
+        setState(() {
+          // Only show banner if email is NOT verified
+          _showEmailBanner = updatedUser != null && !updatedUser.emailVerified;
+          _isCheckingVerification = false;
+        });
+      }
+    } catch (e) {
+      print('Error checking verification status: $e');
+      if (mounted) {
+        setState(() {
+          _isCheckingVerification = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _sendVerificationEmail() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    // Check if already verified
+    await user.reload();
+    final reloadedUser = FirebaseAuth.instance.currentUser;
+
+    if (reloadedUser != null && reloadedUser.emailVerified) {
+      if (mounted) {
+        setState(() {
+          _showEmailBanner = false;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                Icon(
+                  PhosphorIcons.check(),
+                  color: Colors.white,
+                  size: 20,
+                ),
+                const SizedBox(width: 12),
+                const Expanded(
+                  child: Text('Your email is already verified!'),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.green.shade600,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            margin: const EdgeInsets.all(16),
+          ),
+        );
+      }
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      await user.sendEmailVerification();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                Icon(
+                  PhosphorIcons.check(),
+                  color: Colors.white,
+                  size: 20,
+                ),
+                const SizedBox(width: 12),
+                const Expanded(
+                  child: Text('Verification email sent! Check your inbox.'),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.green.shade600,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            margin: const EdgeInsets.all(16),
+          ),
+        );
+      }
+    } on FirebaseAuthException catch (e) {
+      String errorMessage;
+
+      switch (e.code) {
+        case 'too-many-requests':
+          errorMessage = 'Too many requests. Please wait before trying again.';
+          break;
+        default:
+          errorMessage = 'Failed to send verification email. Please try again.';
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                Icon(
+                  PhosphorIcons.warning(),
+                  color: Colors.white,
+                  size: 20,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(errorMessage),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.red.shade600,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            margin: const EdgeInsets.all(16),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppStyles.backgroundWhite,
-      appBar: AppBar(
-        backgroundColor: AppStyles.backgroundWhite,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(
-            PhosphorIcons.arrowLeft(),
-            color: AppStyles.textPrimary,
-            size: 28,
+    return Consumer<UserProvider>(
+      builder: (context, userProvider, child) {
+        final user = FirebaseAuth.instance.currentUser;
+        final isEmailVerified = user?.emailVerified ?? true;
+
+        return Scaffold(
+          backgroundColor: AppStyles.backgroundWhite,
+          appBar: AppBar(
+            backgroundColor: AppStyles.backgroundWhite,
+            elevation: 0,
+            leading: IconButton(
+              icon: Icon(
+                PhosphorIcons.arrowLeft(),
+                color: AppStyles.textPrimary,
+                size: 28,
+              ),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            title: Text(
+              'Account Settings',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.w600,
+                color: AppStyles.textPrimary,
+                letterSpacing: -0.5,
+              ),
+            ),
           ),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        title: Text(
-          'Account Settings',
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.w600,
-            color: AppStyles.textPrimary,
-            letterSpacing: -0.5,
+          body: SingleChildScrollView(
+            child: Column(
+              children: [
+                if (!isEmailVerified && _showEmailBanner)
+                  _buildEmailConfirmationBanner(),
+                const SizedBox(height: 8),
+                _buildMenuList(),
+              ],
+            ),
           ),
-        ),
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            if (_showEmailBanner) _buildEmailConfirmationBanner(),
-            const SizedBox(height: 8),
-            _buildMenuList(),
-          ],
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -121,18 +293,28 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
             width: double.infinity,
             height: 48,
             child: ElevatedButton(
-              onPressed: () {
-                // Handle email confirmation
-              },
+              onPressed: _isLoading ? null : _sendVerificationEmail,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,
                 foregroundColor: AppStyles.textPrimary,
+                disabledBackgroundColor: Colors.grey.shade300,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
                 elevation: 0,
               ),
-              child: Text(
+              child: _isLoading
+                  ? SizedBox(
+                height: 20,
+                width: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    AppStyles.textPrimary,
+                  ),
+                ),
+              )
+                  : Text(
                 'Confirm email',
                 style: TextStyle(
                   fontSize: 16,

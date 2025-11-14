@@ -46,6 +46,10 @@ dependencies:
   email_validator: ^2.1.17
   phosphor_flutter: ^2.1.0
 
+  lottie: ^3.1.0
+
+  permission_handler: ^11.3.0
+
   # State management
   provider: ^6.1.1
 
@@ -59,6 +63,8 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
 
+  flutter_launcher_icons: ^0.13.1
+
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
   # activated in the `analysis_options.yaml` file located at the root of your
@@ -70,6 +76,12 @@ dev_dependencies:
 # following page: https://dart.dev/tools/pub/pubspec
 
 # The following section is specific to Flutter packages.
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon/app_icon.png"
+
 flutter:
 
   # The following line ensures that the Material Icons font is
@@ -108,7 +120,9 @@ flutter:
           weight: 800  # Extra Bold
 
   assets:
-    - assets/icons/
+    - assets/images/
+    - assets/animations/
+    - assets/icon/
 
   # fonts:
   #   - family: Schyler

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import '../app_styles.dart';
+import '../utils/app_styles.dart';
 
 class ProvidersListPage extends StatefulWidget {
   final String selectedService;
@@ -39,7 +39,7 @@ class _ProvidersListPageState extends State<ProvidersListPage> {
       'service': 'Photography',
       'rating': 4.9,
       'reviews': 127,
-      'price': 'GH₵800',
+      'price': 'GHS800',
       'location': 'Accra, Greater Accra',
       'speciality': 'Wedding & Portrait Photography',
       'availability': 'Available this week',
@@ -53,7 +53,7 @@ class _ProvidersListPageState extends State<ProvidersListPage> {
       'service': 'Graphic Design',
       'rating': 5.0,
       'reviews': 94,
-      'price': 'GH₵600',
+      'price': 'GHS600',
       'location': 'Kumasi, Ashanti',
       'speciality': 'Brand Identity & Logo Design',
       'availability': 'Available today',
@@ -67,7 +67,7 @@ class _ProvidersListPageState extends State<ProvidersListPage> {
       'service': 'Web Development',
       'rating': 4.8,
       'reviews': 203,
-      'price': 'GH₵2,500',
+      'price': 'GHS2,500',
       'location': 'Accra, Greater Accra',
       'speciality': 'Full-stack Web Applications',
       'availability': 'Available in 2 days',
@@ -81,7 +81,7 @@ class _ProvidersListPageState extends State<ProvidersListPage> {
       'service': 'Video Editing',
       'rating': 4.7,
       'reviews': 82,
-      'price': 'GH₵1,200',
+      'price': 'GHS1,200',
       'location': 'Takoradi, Western',
       'speciality': 'Corporate & Social Media Videos',
       'availability': 'Available this week',
@@ -95,7 +95,7 @@ class _ProvidersListPageState extends State<ProvidersListPage> {
       'service': 'Writing',
       'rating': 4.9,
       'reviews': 156,
-      'price': 'GH₵400',
+      'price': 'GHS400',
       'location': 'Accra, Greater Accra',
       'speciality': 'Content Writing & Copywriting',
       'availability': 'Available today',
@@ -109,7 +109,7 @@ class _ProvidersListPageState extends State<ProvidersListPage> {
       'service': 'Marketing',
       'rating': 4.6,
       'reviews': 118,
-      'price': 'GH₵1,800',
+      'price': 'GHS1,800',
       'location': 'Cape Coast, Central',
       'speciality': 'Social Media & SEO Marketing',
       'availability': 'Available in 3 days',
@@ -872,7 +872,7 @@ class _ProvidersListPageState extends State<ProvidersListPage> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
-                      'GH₵200',
+                      'GHS200',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
@@ -903,7 +903,7 @@ class _ProvidersListPageState extends State<ProvidersListPage> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
-                      'GH₵5,000',
+                      'GHS5,000',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w500,

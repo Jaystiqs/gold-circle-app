@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:lottie/lottie.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:provider/provider.dart';
-import '../../app_styles.dart';
-import '../../providers/user_provider.dart';
+import '../../utils/app_styles.dart';
+import '../../creators/app_mode_provider.dart';
+import '../../creators/user_provider.dart';
+import '../../utils/full_page_overlay.dart';
+import 'post_task_request.dart';
+import 'client_self_task_requests.dart';
 
 class ClientProfilePage extends StatefulWidget {
   const ClientProfilePage({super.key});
@@ -13,17 +18,44 @@ class ClientProfilePage extends StatefulWidget {
   State<ClientProfilePage> createState() => _ClientProfilePageState();
 }
 
-class _ClientProfilePageState extends State<ClientProfilePage> {
+class _ClientProfilePageState extends State<ClientProfilePage> with SingleTickerProviderStateMixin {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   bool _isLoading = true;
   Map<String, dynamic>? _userData;
   Map<String, dynamic>? _clientData;
 
+  late AnimationController _buttonAnimationController;
+  late Animation<double> _buttonScaleAnimation;
+
   @override
   void initState() {
     super.initState();
     _loadUserData();
+
+    // Initialize button entrance animation
+    _buttonAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 600),
+      vsync: this,
+    );
+
+    _buttonScaleAnimation = CurvedAnimation(
+      parent: _buttonAnimationController,
+      curve: Curves.easeOutBack,
+    );
+
+    // Start the animation after a short delay
+    Future.delayed(const Duration(milliseconds: 300), () {
+      if (mounted) {
+        _buttonAnimationController.forward();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _buttonAnimationController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadUserData() async {
@@ -101,9 +133,120 @@ class _ClientProfilePageState extends State<ClientProfilePage> {
     Navigator.of(context).pushNamed('/auth');
   }
 
-  void _switchToProviderMode() {
-    // Handle switching to provider mode
-    print('Switching to provider mode...');
+  void _switchToProviderMode() async {
+    final appModeProvider = Provider.of<AppModeCreator>(context, listen: false);
+
+    final success = await appModeProvider.switchToCreatorMode();
+
+    if (!mounted) return;
+
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              Icon(Icons.check_circle, color: Colors.white, size: 20),
+              const SizedBox(width: 12),
+              Text('Switched to Provider Mode'),
+            ],
+          ),
+          backgroundColor: Colors.green,
+          duration: const Duration(seconds: 1),
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.all(16),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              Icon(Icons.error_outline, color: Colors.white, size: 20),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  appModeProvider.errorMessage ?? 'Failed to switch mode',
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.all(16),
+        ),
+      );
+    }
+  }
+
+  Widget _buildFloatingActionButton() {
+    return ScaleTransition(
+      scale: _buttonScaleAnimation,
+      child: Consumer<AppModeCreator>(
+        builder: (context, appModeProvider, child) {
+          final isLoading = appModeProvider.isLoading;
+
+          return Container(
+            margin: const EdgeInsets.only(bottom: 0),
+            child: ElevatedButton(
+              onPressed: isLoading ? null : _switchToProviderMode,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.black,
+                foregroundColor: Colors.white,
+                disabledBackgroundColor: Colors.grey.shade900,
+                padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                elevation: 4,
+                shadowColor: Colors.black.withOpacity(0.3),
+              ),
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 200),
+                transitionBuilder: (child, animation) {
+                  return FadeTransition(
+                    opacity: animation,
+                    child: ScaleTransition(
+                      scale: animation,
+                      child: child,
+                    ),
+                  );
+                },
+                child: isLoading
+                    ? SizedBox(
+                  key: const ValueKey('loading'),
+                  width: 28,
+                  height: 28,
+                  child: Lottie.asset(
+                    'assets/animations/gc_main_loader.json',
+                    repeat: true,
+                    animate: true,
+                  ),
+                )
+                    : Row(
+                  key: const ValueKey('button'),
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      PhosphorIcons.arrowsLeftRight(),
+                      size: 20,
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      'Switch to Creator Mode',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
   }
 
   void _navigateToAccountSettings() {
@@ -129,8 +272,14 @@ class _ClientProfilePageState extends State<ClientProfilePage> {
           return Scaffold(
             backgroundColor: AppStyles.backgroundWhite,
             body: Center(
-              child: CircularProgressIndicator(
-                color: AppStyles.goldPrimary,
+              child: SizedBox(
+                height: 50,
+                width: 50,
+                child: Lottie.asset(
+                  'assets/animations/gc_main_loader.json',
+                  repeat: true,
+                  animate: true,
+                ),
               ),
             ),
           );
@@ -161,7 +310,6 @@ class _ClientProfilePageState extends State<ClientProfilePage> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      // Title
                       Text(
                         'Log in to view profile',
                         style: TextStyle(
@@ -173,8 +321,6 @@ class _ClientProfilePageState extends State<ClientProfilePage> {
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 32),
-
-                      // Login button
                       SizedBox(
                         width: double.infinity,
                         height: 48,
@@ -229,39 +375,7 @@ class _ClientProfilePageState extends State<ClientProfilePage> {
           ],
         ),
       ),
-      floatingActionButton: Container(
-        margin: const EdgeInsets.only(bottom: 0),
-        child: ElevatedButton(
-          onPressed: _switchToProviderMode,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.black,
-            foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(30),
-            ),
-            elevation: 4,
-            shadowColor: Colors.black.withOpacity(0.3),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                PhosphorIcons.arrowsLeftRight(),
-                size: 20,
-              ),
-              const SizedBox(width: 10),
-              Text(
-                'Switch to Provider Mode',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+      floatingActionButton: _buildFloatingActionButton(),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
@@ -314,8 +428,8 @@ class _ClientProfilePageState extends State<ClientProfilePage> {
               Stack(
                 children: [
                   Container(
-                    width: 90,
-                    height: 90,
+                    width: 120,
+                    height: 120,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: AppStyles.backgroundGrey,
@@ -338,10 +452,10 @@ class _ClientProfilePageState extends State<ClientProfilePage> {
                       child: Text(
                         firstName.isNotEmpty ? firstName[0].toUpperCase() : 'U',
                         style: AppStyles.h1.copyWith(
-                          fontSize: 38,
-                          color: AppStyles.textSecondary,
-                          fontWeight: AppStyles.bold,
-                          letterSpacing: -0.5
+                            fontSize: 38,
+                            color: AppStyles.textSecondary,
+                            fontWeight: AppStyles.bold,
+                            letterSpacing: -0.5
                         ),
                       ),
                     )
@@ -390,7 +504,7 @@ class _ClientProfilePageState extends State<ClientProfilePage> {
                 ),
               ),
               const SizedBox(height: 40),
-              _buildBecomeProviderCard(),
+              _buildActionCards(),
               const SizedBox(height: 18),
             ],
           ),
@@ -399,71 +513,153 @@ class _ClientProfilePageState extends State<ClientProfilePage> {
     );
   }
 
-  Widget _buildBecomeProviderCard() {
-    return InkWell(
-      onTap: () {
-        // Navigate to provider registration/onboarding
-      },
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.only(top: 18, bottom: 18, right: 18, left: 18, ),
-        decoration: BoxDecoration(
-          color: Colors.white,
+  Widget _buildActionCards() {
+    return Column(
+      children: [
+        // Post a Task Request Card (TOP - White with image)
+        InkWell(
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => const PostTaskRequestPage(),
+              ),
+            );
+          },
           borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.15),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
+          child: Container(
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: AppStyles.goldPrimary,
+                width: 2.0,
               ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Image.asset(
-                  'assets/icons/freelancer.png',
-                  fit: BoxFit.cover,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.15),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
                 ),
-              ),
+              ],
             ),
-            const SizedBox(width: 20),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Become a provider',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: AppStyles.textPrimary,
+            child: Row(
+              children: [
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.asset(
+                      'assets/images/tasks_lady.png',
+                      fit: BoxFit.cover,
                     ),
                   ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'It\'s easy to start providing services and earn extra income.',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: AppStyles.textSecondary,
-                      fontWeight: FontWeight.w400,
-                      height: 1.4,
-                    ),
+                ),
+                const SizedBox(width: 20),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Post a Task Request',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: AppStyles.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'Let providers bid on your project. Get the best offers!',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: AppStyles.textSecondary,
+                          fontWeight: FontWeight.w400,
+                          height: 1.4,
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
-      ),
+
+        const SizedBox(height: 16),
+
+        // Become a Provider Card (BOTTOM - White)
+        InkWell(
+          onTap: () {
+            // Navigate to provider registration/onboarding
+          },
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.15),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.asset(
+                      'assets/images/freelancer.png',
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 20),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Become a creator',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: AppStyles.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'It\'s easy to start providing services and earn extra income.',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: AppStyles.textSecondary,
+                          fontWeight: FontWeight.w400,
+                          height: 1.4,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -472,17 +668,21 @@ class _ClientProfilePageState extends State<ClientProfilePage> {
       child: Column(
         children: [
           _buildMenuButton(
-            icon: PhosphorIcons.gear(),
-            title: 'Account settings',
-            onTap: _navigateToAccountSettings,
+            icon: PhosphorIcons.clipboardText(),
+            title: 'My Task Requests',
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const ClientSelfTaskRequestsPage(),
+                ),
+              );
+            },
           ),
           const SizedBox(height: 8),
           _buildMenuButton(
-            icon: PhosphorIcons.trophy(),
-            title: 'Rewards',
-            onTap: () {
-              // Navigate to view profile
-            },
+            icon: PhosphorIcons.gear(),
+            title: 'Account settings',
+            onTap: _navigateToAccountSettings,
           ),
           const SizedBox(height: 8),
           _buildMenuButton(
@@ -492,14 +692,6 @@ class _ClientProfilePageState extends State<ClientProfilePage> {
               // Navigate to view profile
             },
           ),
-          // const SizedBox(height: 8),
-          // _buildMenuButton(
-          //   icon: PhosphorIcons.hand(),
-          //   title: 'Privacy',
-          //   onTap: () {
-          //     // Navigate to privacy settings
-          //   },
-          // ),
           const SizedBox(height: 24),
           Divider(
             color: AppStyles.textSecondary.withOpacity(0.2),

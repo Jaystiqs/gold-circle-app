@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import '../../app_styles.dart';
+import '../../utils/app_styles.dart';
 import 'chat_detail.dart';
 
 class MessagesPage extends StatefulWidget {

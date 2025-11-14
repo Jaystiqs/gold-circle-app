@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:email_validator/email_validator.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import '../app_styles.dart';
+import '../utils/app_styles.dart';
+import '../onboarding/models/onboarding_data.dart';
+import 'forgot_password.dart';
 
 enum AuthStep {
   emailEntry,
@@ -12,7 +14,12 @@ enum AuthStep {
 }
 
 class ConsolidatedAuthPage extends StatefulWidget {
-  const ConsolidatedAuthPage({super.key});
+  final OnboardingData? onboardingData;
+
+  const ConsolidatedAuthPage({
+    super.key,
+    this.onboardingData,
+  });
 
   @override
   State<ConsolidatedAuthPage> createState() => _ConsolidatedAuthPageState();
@@ -130,15 +137,15 @@ class _ConsolidatedAuthPageState extends State<ConsolidatedAuthPage> {
   Future<void> _testFirestoreRules() async {
     final currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser == null) {
-      print('❌ No authenticated user for testing');
+      print('âŒ No authenticated user for testing');
       return;
     }
 
     try {
-      print('🧪 Testing Firestore rules...');
+      print('ðŸ§ª Testing Firestore rules...');
 
       // Test 1: Create a user document
-      print('📝 Test 1: Creating user document...');
+      print('ðŸ“ Test 1: Creating user document...');
       await FirebaseFirestore.instance
           .collection('users')
           .doc(currentUser.uid)
@@ -148,10 +155,10 @@ class _ConsolidatedAuthPageState extends State<ConsolidatedAuthPage> {
         'lastName': 'User',
         'createdAt': FieldValue.serverTimestamp(),
       });
-      print('✅ User document created successfully');
+      print('âœ… User document created successfully');
 
       // Test 2: Create an email document
-      print('📧 Test 2: Creating email document...');
+      print('ðŸ“§ Test 2: Creating email document...');
       await FirebaseFirestore.instance
           .collection('user_emails')
           .doc('test@example.com')
@@ -160,24 +167,24 @@ class _ConsolidatedAuthPageState extends State<ConsolidatedAuthPage> {
         'exists': true,
         'createdAt': FieldValue.serverTimestamp(),
       });
-      print('✅ Email document created successfully');
+      print('âœ… Email document created successfully');
 
       // Test 3: Read the documents back
-      print('📖 Test 3: Reading documents...');
+      print('ðŸ“– Test 3: Reading documents...');
       final userDoc = await FirebaseFirestore.instance
           .collection('users')
           .doc(currentUser.uid)
           .get();
-      print('✅ User document read: ${userDoc.exists}');
+      print('âœ… User document read: ${userDoc.exists}');
 
       final emailDoc = await FirebaseFirestore.instance
           .collection('user_emails')
           .doc('test@example.com')
           .get();
-      print('✅ Email document read: ${emailDoc.exists}');
+      print('âœ… Email document read: ${emailDoc.exists}');
 
       // Clean up test documents
-      print('🧹 Cleaning up test documents...');
+      print('ðŸ§¹ Cleaning up test documents...');
       await FirebaseFirestore.instance
           .collection('users')
           .doc(currentUser.uid)
@@ -186,10 +193,10 @@ class _ConsolidatedAuthPageState extends State<ConsolidatedAuthPage> {
           .collection('user_emails')
           .doc('test@example.com')
           .delete();
-      print('✅ Test completed successfully!');
+      print('âœ… Test completed successfully!');
 
     } catch (e) {
-      print('❌ Firestore rules test failed: $e');
+      print('âŒ Firestore rules test failed: $e');
     }
   }
 
@@ -305,12 +312,12 @@ class _ConsolidatedAuthPageState extends State<ConsolidatedAuthPage> {
         password: _passwordController.text.trim(),
       );
 
-      print('✅ User created successfully: ${userCredential.user?.uid}');
+      print('âœ… User created successfully: ${userCredential.user?.uid}');
 
       // Update the user's display name (should work with updated packages)
       final fullName = '${_firstNameController.text.trim()} ${_lastNameController.text.trim()}';
       await userCredential.user?.updateDisplayName(fullName);
-      print('✅ Display name updated: $fullName');
+      print('âœ… Display name updated: $fullName');
 
       // Small delay to ensure auth state propagates to Firestore
       await Future.delayed(const Duration(milliseconds: 300));
@@ -318,20 +325,21 @@ class _ConsolidatedAuthPageState extends State<ConsolidatedAuthPage> {
       // Create user document in Firestore
       if (userCredential.user != null) {
         await _createUserDocument(userCredential.user!);
-        print('✅ User document created successfully');
+        print('âœ… User document created successfully');
       }
 
       // Mark registration as successful BEFORE navigation
       registrationSuccessful = true;
-      print('✅ Registration completed successfully!');
+      print('âœ… Registration completed successfully!');
 
       // Navigate to email verification
       if (mounted) {
-        Navigator.of(context).pushNamedAndRemoveUntil('/email-verification', (route) => false);
+        // Navigator.of(context).pushNamedAndRemoveUntil('/email-verification', (route) => false);
+        Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
       }
 
     } on FirebaseAuthException catch (e) {
-      print('❌ FirebaseAuthException: ${e.code} - ${e.message}');
+      print('âŒ FirebaseAuthException: ${e.code} - ${e.message}');
 
       String errorMessage;
       switch (e.code) {
@@ -355,38 +363,38 @@ class _ConsolidatedAuthPageState extends State<ConsolidatedAuthPage> {
         _errorMessage = errorMessage;
       });
     } on FirebaseException catch (e) {
-      print('❌ FirebaseException during document creation: ${e.code} - ${e.message}');
+      print('âŒ FirebaseException during document creation: ${e.code} - ${e.message}');
 
       // If Firestore document creation fails, clean up the Auth user
       try {
         await FirebaseAuth.instance.currentUser?.delete();
-        print('✅ Cleaned up auth user after Firestore failure');
+        print('âœ… Cleaned up auth user after Firestore failure');
       } catch (deleteError) {
-        print('⚠️ Could not delete auth user: $deleteError');
+        print('âš ï¸ Could not delete auth user: $deleteError');
       }
 
       setState(() {
         _errorMessage = 'Failed to complete registration. Please try again.';
       });
     } catch (e, stackTrace) {
-      print('❌ Unexpected error during signup: $e');
-      print('📍 Stack trace: $stackTrace');
+      print('âŒ Unexpected error during signup: $e');
+      print('ðŸ“ Stack trace: $stackTrace');
 
       // Only show error if registration wasn't successful
       if (!registrationSuccessful) {
         // Check if user was partially created
         if (FirebaseAuth.instance.currentUser != null) {
-          print('⚠️ User was created but something failed - likely Firestore permissions');
+          print('âš ï¸ User was created but something failed - likely Firestore permissions');
           // Try one more time to create the documents
           try {
             await _createUserDocument(FirebaseAuth.instance.currentUser!);
-            print('✅ Retry successful - proceeding to verification');
+            print('âœ… Retry successful - proceeding to verification');
             if (mounted) {
               Navigator.of(context).pushNamedAndRemoveUntil('/email-verification', (route) => false);
               return;
             }
           } catch (retryError) {
-            print('❌ Retry failed: $retryError');
+            print('âŒ Retry failed: $retryError');
           }
         }
 
@@ -396,7 +404,7 @@ class _ConsolidatedAuthPageState extends State<ConsolidatedAuthPage> {
           });
         }
       } else {
-        print('⚠️ Error occurred after successful registration - ignoring');
+        print('âš ï¸ Error occurred after successful registration - ignoring');
       }
     } finally {
       if (mounted) {
@@ -411,7 +419,18 @@ class _ConsolidatedAuthPageState extends State<ConsolidatedAuthPage> {
     print('📝 Starting _createUserDocument for user: ${user.uid}');
 
     try {
-      // Prepare user data
+      // Determine user role based on onboarding data
+      String defaultRole = 'client'; // Default
+      List<String> activeRoles = ['client']; // Default
+
+      if (widget.onboardingData != null) {
+        if (widget.onboardingData!.userType == 'provider') {
+          defaultRole = 'provider';
+          activeRoles = ['provider'];
+        }
+      }
+
+      // Prepare user data with role structure
       final userData = {
         'email': _emailController.text.trim().toLowerCase(),
         'firstName': _firstNameController.text.trim(),
@@ -421,6 +440,17 @@ class _ConsolidatedAuthPageState extends State<ConsolidatedAuthPage> {
         'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
         'emailVerified': false,
+
+        // Role structure
+        'currentRole': defaultRole,
+        'activeRoles': activeRoles,
+        'preferences': {
+          'defaultRole': defaultRole,
+        },
+
+        // Onboarding data
+        'onboardingCompleted': widget.onboardingData?.isComplete ?? false,
+        'onboardingData': widget.onboardingData?.toJson(),
       };
 
       // Create user document
@@ -445,19 +475,198 @@ class _ConsolidatedAuthPageState extends State<ConsolidatedAuthPage> {
 
       print('✅ Email document created in Firestore');
 
+      // Save onboarding data separately for analytics and intelligence
+      if (widget.onboardingData != null) {
+        await _saveOnboardingDataForAnalytics(user.uid);
+      }
+
+      // Create role-specific profiles based on onboarding data
+      if (widget.onboardingData != null) {
+        if (widget.onboardingData!.userType == 'client') {
+          await _createClientProfileWithOnboarding(user.uid);
+        } else if (widget.onboardingData!.userType == 'provider') {
+          await _createCreatorProfileWithOnboarding(user.uid);
+        }
+      } else {
+        // Create default client profile if no onboarding data
+        await _createInitialClientProfile(user.uid);
+      }
+
     } on FirebaseException catch (e) {
       print('❌ Firestore Error:');
       print('   Code: ${e.code}');
       print('   Message: ${e.message}');
 
       if (e.code == 'permission-denied') {
-        print('🔐 Permission denied - Check these:');
+        print('🔍 Permission denied - Check these:');
         print('   1. User UID: ${user.uid}');
         print('   2. User is authenticated: ${FirebaseAuth.instance.currentUser != null}');
         print('   3. Firestore rules allow write to users/${user.uid}');
       }
 
       rethrow;
+    }
+  }
+
+  Future<void> _createClientProfileWithOnboarding(String uid) async {
+    try {
+      final onboarding = widget.onboardingData!;
+
+      await FirebaseFirestore.instance.collection('clients').doc(uid).set({
+        'uid': uid,
+        'preferences': {
+          'primaryTask': onboarding.primaryTask,
+          'taskPreferences': onboarding.taskPreferences,
+          'priorities': onboarding.priorities,
+        },
+        'savedProviders': [],
+        'activeProjects': [],
+        'isActive': true,
+        'location': 'Accra, Ghana',
+        'activeOrders': 0,
+        'completedOrders': 0,
+        'totalSpent': 0.0,
+
+        // Onboarding specific data
+        'interestedTasks': [
+          if (onboarding.primaryTask != null) onboarding.primaryTask!,
+          ...?onboarding.additionalTasks,
+        ],
+        'referralSource': onboarding.referralSource,
+        'notificationsEnabled': onboarding.notificationsEnabled,
+
+        'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+
+      print('✅ Client profile created with onboarding data');
+    } catch (e) {
+      print('⚠️ Error creating client profile with onboarding: $e');
+      // Don't rethrow - profile creation is not critical for signup
+    }
+  }
+
+  Future<void> _createCreatorProfileWithOnboarding(String uid) async {
+    try {
+      final onboarding = widget.onboardingData!;
+
+      await FirebaseFirestore.instance.collection('creators').doc(uid).set({
+        'uid': uid,
+        'primaryService': onboarding.primaryService,
+        'skills': onboarding.skills ?? [],
+        'experienceLevel': onboarding.experienceLevel,
+        'availability': onboarding.availability,
+        'goal': onboarding.goal,
+
+        // Profile status
+        'isActive': true,
+        'profileComplete': false, // They still need to add portfolio, rates, etc.
+        'verified': false,
+
+        // Stats
+        'activeProjects': 0,
+        'completedProjects': 0,
+        'totalEarnings': 0.0,
+        'rating': 0.0,
+        'reviewCount': 0,
+
+        // Additional data
+        'additionalServices': onboarding.additionalServices ?? [],
+        'referralSource': onboarding.referralSource,
+        'notificationsEnabled': onboarding.notificationsEnabled,
+
+        'location': 'Accra, Ghana',
+        'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+
+      print('✅ Provider profile created with onboarding data');
+    } catch (e) {
+      print('⚠️ Error creating provider profile with onboarding: $e');
+      // Don't rethrow - profile creation is not critical for signup
+    }
+  }
+
+
+  Future<void> _createInitialClientProfile(String uid) async {
+    try {
+      await FirebaseFirestore.instance.collection('clients').doc(uid).set({
+        'uid': uid,
+        'preferences': {},
+        'savedProviders': [],
+        'activeProjects': [],
+        'isActive': true,
+        'location': 'Accra, Ghana',
+        'activeOrders': 0,
+        'completedOrders': 0,
+        'totalSpent': 0.0,
+        'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+
+      print('âœ… Initial client profile created');
+    } catch (e) {
+      print('âš ï¸ Error creating initial client profile: $e');
+      // Don't rethrow - client profile creation is not critical for signup
+    }
+  }
+
+  Future<void> _saveOnboardingDataForAnalytics(String uid) async {
+    try {
+      final onboarding = widget.onboardingData!;
+
+      // Create a comprehensive analytics document
+      await FirebaseFirestore.instance.collection('onboarding_responses').add({
+        // User identification
+        'userId': uid,
+        'userEmail': _emailController.text.trim().toLowerCase(),
+        'userName': '${_firstNameController.text.trim()} ${_lastNameController.text.trim()}',
+
+        // Metadata
+        'userType': onboarding.userType,
+        'completedAt': FieldValue.serverTimestamp(),
+        'onboardingVersion': '1.0', // You can version your onboarding flow
+        'isComplete': onboarding.isComplete,
+
+        // CLIENT DATA (if applicable)
+        if (onboarding.userType == 'client') ...{
+          'primaryTask': onboarding.primaryTask,
+          'taskPreferences': onboarding.taskPreferences,
+          'taskDetails': onboarding.taskDetails,
+          'priorities': onboarding.priorities,
+          'additionalTasks': onboarding.additionalTasks,
+          'totalTasksSelected': (onboarding.additionalTasks?.length ?? 0) +
+              (onboarding.primaryTask != null ? 1 : 0),
+        },
+
+        // PROVIDER DATA (if applicable)
+        if (onboarding.userType == 'provider') ...{
+          'primaryService': onboarding.primaryService,
+          'skills': onboarding.skills,
+          'skillCount': onboarding.skills?.length ?? 0,
+          'experienceLevel': onboarding.experienceLevel,
+          'goal': onboarding.goal,
+          'availability': onboarding.availability,
+          'additionalServices': onboarding.additionalServices,
+        },
+
+        // SHARED DATA
+        'referralSource': onboarding.referralSource,
+        'referralDetails': onboarding.referralDetails,
+        'notificationsEnabled': onboarding.notificationsEnabled,
+
+        // Additional metadata for analytics
+        'birthDate': _selectedBirthDate != null ? Timestamp.fromDate(_selectedBirthDate!) : null,
+        'location': 'Accra, Ghana', // You can make this dynamic later
+
+        // Complete raw data
+        'rawOnboardingData': onboarding.toJson(),
+      });
+
+      print('✅ Onboarding data saved to analytics collection');
+    } catch (e) {
+      print('⚠️ Error saving onboarding analytics: $e');
+      // Don't rethrow - analytics failure shouldn't block signup
     }
   }
 
@@ -480,7 +689,7 @@ class _ConsolidatedAuthPageState extends State<ConsolidatedAuthPage> {
         const SizedBox(height: 40),
 
         Text(
-          'Log in or sign up to Gold Circle',
+          'Sign in to Gold Circle',
           style: AppStyles.h3.copyWith(
             fontWeight: FontWeight.w600,
           ),
@@ -713,8 +922,10 @@ class _ConsolidatedAuthPageState extends State<ConsolidatedAuthPage> {
         Center(
           child: TextButton(
             onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Forgot password functionality coming soon!')),
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const ForgotPasswordPage(),
+                ),
               );
             },
             child: Text(
@@ -816,12 +1027,12 @@ class _ConsolidatedAuthPageState extends State<ConsolidatedAuthPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const SizedBox(height: 40),
+        // const SizedBox(height: 40),
 
         Text(
           'Finish signing up',
-          style: AppStyles.h3.copyWith(
-            fontWeight: FontWeight.w600,
+          style: AppStyles.h2.copyWith(
+            // fontWeight: FontWeight.w600,
           ),
           textAlign: TextAlign.left,
         ),

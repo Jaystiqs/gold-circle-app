@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../app_styles.dart';
-import '../client/find_providers.dart';
+import '../../utils/app_styles.dart';
+import '../client/client_find_creators.dart';
 
 // Category data model based on your Firestore structure
 class ServiceCategory {
